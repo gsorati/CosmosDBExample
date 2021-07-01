@@ -1,0 +1,201 @@
+using Microsoft.Azure.Cosmos;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CosmosDBExampleDemo
+{
+    class Program
+    {
+        #region Properties
+        // The Azure Cosmos DB endpoint for running this sample.
+        private static readonly string EndpointUri = "https://localhost:8081/";
+        // The primary key for the Azure Cosmos account.
+        private static readonly string PrimaryKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
+        // The Cosmos client instance
+        private CosmosClient cosmosClient;
+        // The database we will create
+        private Database database;
+        // The container we will create.
+        private Container container;
+        // The name of the database and container we will create
+        private string databaseId = "ExampleDB1";
+        private string containerId = "ExampleContainer1";
+        #endregion
+
+        #region methods
+        public static void Main(string[] args)
+        {
+            try
+            {
+                Console.WriteLine("Beginning operations...\n");
+                Program p = new Program();
+                p.OnStartAync();
+
+            }
+            catch (CosmosException de)
+            {
+                Exception baseException = de.GetBaseException();
+                Console.WriteLine("{0} error occurred: {1}", de.StatusCode, de);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error: {0}", e);
+            }
+            finally
+            {
+                //Console.WriteLine("End of demo, press any key to exit.");
+                Console.ReadKey();
+            }
+        }
+
+        public async void OnStartAync()
+        {
+            this.cosmosClient = new CosmosClient(EndpointUri, PrimaryKey);
+            await this.CreateDatabaseAsync();
+            await this.CreateContainerAsync();
+            await this.AddItemsToContainerAsync();
+            await this.QueryItemsAsync();
+            //await ReplaceMessageItemAsync();
+            //await DeleteMessageItemAsync();
+            //await CreateTTL();
+        }
+
+        public async Task CreateDatabaseAsync()
+        {
+            this.database = await this.cosmosClient.CreateDatabaseIfNotExistsAsync(this.databaseId);
+            Console.WriteLine("Created Database: {0}\n", this.database.Id);
+        }
+
+        public async Task CreateContainerAsync()
+        {
+            ContainerProperties containerProperties = new ContainerProperties(this.containerId, "/TenantId");
+            containerProperties.DefaultTimeToLive = -1;
+            containerProperties.IndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/*" });
+            this.container = (Container)await this.database.CreateContainerIfNotExistsAsync(containerProperties);
+            containerProperties.IndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/MessageId/*" });
+            //containerProperties.IndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/Properties/*" });
+            //containerProperties.IndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/MessageQueue/*" });
+            containerProperties.IndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/MessageType/*" });
+            //containerProperties.IndexingPolicy.IncludedPaths.Add(new IncludedPath { Path = "/Location/*" });
+
+            containerProperties.IndexingPolicy.ExcludedPaths.Add(new ExcludedPath { Path = "/*" });
+            //containerProperties.UniqueKeyPolicy = new UniqueKeyPolicy
+            //{
+            //    UniqueKeys = new Item<UniqueKey>{
+            //    new UniqueKey { Paths = new Item<string> { "/MessageId"}} }
+            //};
+            var uniq = new UniqueKey();
+            uniq.Paths.Add("/MessageId");
+            //var uq = new UniqueKeyPolicy();
+            //uq.UniqueKeys.Add(uniq);
+            containerProperties.UniqueKeyPolicy.UniqueKeys.Add(uniq);
+            Console.WriteLine("Created container: {0}\n", this.container.Id);
+        }
+
+        private async Task AddItemsToContainerAsync()
+        {
+            string json = File.ReadAllText(@"C:\Gadigeppa\test.json");
+            List<Message> lists = JsonConvert.DeserializeObject<List<Message>>(json);
+            List<Task> tasks = new List<Task>();
+            foreach (Message message in lists)
+            {
+                tasks.Add(this.AddItemAsync(message, this.container, message.TenantId));
+            }
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task AddItemAsync(Message message, Container container, string partitionKey)
+        {
+            ItemResponse<Message> messageResponse;
+            try
+            {
+                // Read the item to see if it exists.  
+                messageResponse = await container.ReadItemAsync<Message>(message.MessageId, new PartitionKey(partitionKey));
+                Console.WriteLine("Item in database with id: {0} already exists\n", messageResponse.Resource.MessageType);
+            }
+            catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                messageResponse = await container.CreateItemAsync<Message>(message, new PartitionKey(partitionKey));
+                Console.WriteLine("Created item in database with id: {0} Operation consumed {1} RUs.\n", messageResponse.Resource.MessageType, messageResponse.RequestCharge);
+            }
+        }
+
+        private async Task QueryItemsAsync()
+        {
+            await QueryByMessageId();
+            await QueryByMessageType();
+            //await QueryByMessageQueue();
+            //await QueryByMessageProperties();
+            
+        }
+        private async Task QueryByMessageId() {
+            var sqlQueryText = "SELECT * FROM c WHERE c.MessageId = '7e96372e-2e74-4c92-bbf2-399b2bab62d0'";
+
+            Console.WriteLine("Running query: {0}\n", sqlQueryText);
+
+            await this.ReadItemAsync(sqlQueryText, this.container);
+        }
+        private async Task QueryByMessageType()
+        {
+            //Query by Type
+            var sqlQueryText = "SELECT * FROM c WHERE c.TenantId = 'TMD001.TM.Test' AND c.MessageType = 'TMD001.TM.Test|message-server'";
+
+            Console.WriteLine("Running query: {0}\n", sqlQueryText);
+
+            await this.ReadItemAsync(sqlQueryText, this.container);
+
+            var sqlQueryText1 = "SELECT * FROM c WHERE c.MessageType = 'TMD001.TM.Test|message-server'";
+
+            Console.WriteLine("Running query: {0}\n", sqlQueryText1);
+
+            await this.ReadItemAsync(sqlQueryText1, this.container);
+        }
+        private async Task QueryByMessageQueue()
+        {
+            //Query by Queue
+            var sqlQueryText = "SELECT * FROM c WHERE c.TenantId = 'TMD001.TM.Test' AND c.MessageQueue = 'CalculateMeNow'";
+
+            Console.WriteLine("Running query: {0}\n", sqlQueryText);
+
+            await this.ReadItemAsync(sqlQueryText, this.container);
+        }
+        private async Task QueryByMessageProperties()
+        {
+            //Query by Properties
+            var sqlQueryText = "SELECT * FROM c WHERE c.MessageType = 'TMD002.TM.Test|message-server' AND c.Properties.EmployeeId = '3638'";
+
+            Console.WriteLine("Running query: {0}\n", sqlQueryText);
+
+            await this.ReadItemAsync(sqlQueryText, this.container);
+        }
+        private async Task ReadItemAsync(string sqlQueryText, Container container)
+        {
+            QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+
+            FeedIterator<Message> queryResultSetIterator = container.GetItemQueryIterator<Message>(queryDefinition);
+
+            List<Message> messages = new List<Message>();
+
+            while (queryResultSetIterator.HasMoreResults)
+            {
+                FeedResponse<Message> currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                Console.WriteLine("Request Charge=" + currentResultSet.RequestCharge + " RUs" );
+                JObject json = JObject.Parse(currentResultSet.Diagnostics.ToString());
+                Console.WriteLine("QueryMetric: "+json["Context"][8]["QueryMetric"]);
+                foreach (Message message in currentResultSet)
+                {
+                    messages.Add(message);
+                    //Console.WriteLine("\tRead: {0}\n", message.MessageId);
+                }
+            }
+        }
+        #endregion
+    }
+}

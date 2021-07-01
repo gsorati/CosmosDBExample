@@ -5,6 +5,10 @@ VisualStudioVersion = 15.0.28307.1082
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosDBExample", "CosmosDBExample\CosmosDBExample.csproj", "{0AE8761F-4C94-4102-A74B-5B8F76814A38}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosDBLocalExample", "CosmosDBLocalExample\CosmosDBLocalExample.csproj", "{B2258E77-F56F-4D34-A9AD-DEC0CEFF3CEC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CosmosDBExampleDemo", "CosmosDBExampleDemo\CosmosDBExampleDemo.csproj", "{35CB05CD-D6A1-4331-A6D1-E5329DAC7502}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{0AE8761F-4C94-4102-A74B-5B8F76814A38}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0AE8761F-4C94-4102-A74B-5B8F76814A38}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0AE8761F-4C94-4102-A74B-5B8F76814A38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2258E77-F56F-4D34-A9AD-DEC0CEFF3CEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2258E77-F56F-4D34-A9AD-DEC0CEFF3CEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2258E77-F56F-4D34-A9AD-DEC0CEFF3CEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2258E77-F56F-4D34-A9AD-DEC0CEFF3CEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35CB05CD-D6A1-4331-A6D1-E5329DAC7502}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35CB05CD-D6A1-4331-A6D1-E5329DAC7502}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35CB05CD-D6A1-4331-A6D1-E5329DAC7502}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35CB05CD-D6A1-4331-A6D1-E5329DAC7502}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -11,9 +11,9 @@ namespace CosmosDBExample
     public class Program
     {
         // The Azure Cosmos DB endpoint for running this sample.
-        private static readonly string EndpointUri = "https://azure-cosmos-gadi.documents.azure.com:443/";
+        private static readonly string EndpointUri = "https://localhost:8081/";
         // The primary key for the Azure Cosmos account.
-        private static readonly string PrimaryKey = "ZDHZXBLgDxS6zWmVTU1fWD2YHqmHCLSH1O90qtu3rESJ1UxunUsBpEHrXwEaJs2bRVmcIgyIKkEvupm6t5OwrA==";
+        private static readonly string PrimaryKey = "C2y6yDjf5/R+ob0N8A7Cgv30VRDJIWEHLM+4QDU5DE2nQ9nDuVTqobD4b8mGGyPMbIZnqyMsEcaGQy67XIw/Jw==";
 
         // The Cosmos client instance
         private CosmosClient cosmosClient;
@@ -109,10 +109,8 @@ namespace CosmosDBExample
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                // Create an item in the container representing the Andersen family. Note we provide the value of the partition key for this item, which is "Andersen"
                 ItemResponse<Message> message1Response = await this.container.CreateItemAsync<Message>(message1, new PartitionKey(message1.MessageType));
 
-                // Note that after creating the item, we can access the body of the item with the Resource property off the ItemResponse. We can also access the RequestCharge property to see the amount of RUs consumed on this request.
                 Console.WriteLine("Created item in database with id: {0} Operation consumed {1} RUs.\n", message1Response.Resource.MessageID, message1Response.RequestCharge);
 
             }
@@ -135,10 +133,8 @@ namespace CosmosDBExample
             }
             catch (CosmosException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                // Create an item in the container representing the Andersen family. Note we provide the value of the partition key for this item, which is "Andersen"
                 ItemResponse<Message> message2Response = await this.container.CreateItemAsync<Message>(message2, new PartitionKey(message2.MessageType));
 
-                // Note that after creating the item, we can access the body of the item with the Resource property off the ItemResponse. We can also access the RequestCharge property to see the amount of RUs consumed on this request.
                 Console.WriteLine("Created item in database with id: {0} Operation consumed {1} RUs.\n", message2Response.Resource.MessageID, message2Response.RequestCharge);
             }
 
