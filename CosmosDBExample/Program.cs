@@ -166,7 +166,7 @@ namespace CosmosDBExample
                 }
             }
 
-
+            //amend try in VS 
 
             var sqlQueryText1 = "SELECT * FROM c WHERE c.MessageId = '1'";
 
