@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace CosmosDBExampleDemo
 {
+
     class Program
     {
         #region Properties
