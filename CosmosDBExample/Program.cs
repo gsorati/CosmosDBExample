@@ -168,6 +168,7 @@ namespace CosmosDBExample
 
 
 
+
             var sqlQueryText1 = "SELECT * FROM c WHERE c.MessageId = '1'";
 
             Console.WriteLine("Running query: {0}\n", sqlQueryText1);
