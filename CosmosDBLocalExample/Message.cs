@@ -5,6 +5,7 @@ namespace CosmosDBLocalExample
 {
     public class Message
     {
+        //
         [JsonProperty(PropertyName = "id")]
         public string MessageId { get; set; }
 
