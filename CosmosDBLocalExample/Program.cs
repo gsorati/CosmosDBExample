@@ -8,6 +8,7 @@ using System.Net;
 
 namespace CosmosDBLocalExample
 {
+    //text1
     public class Program
     {
         // The Azure Cosmos DB endpoint for running this sample.
