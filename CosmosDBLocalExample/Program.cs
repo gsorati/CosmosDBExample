@@ -10,6 +10,7 @@ namespace CosmosDBLocalExample
 {
     //text1
     //text2
+    //text 3
     public class Program
     {
         // The Azure Cosmos DB endpoint for running this sample.
